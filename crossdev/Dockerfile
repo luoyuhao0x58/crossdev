@@ -29,21 +29,16 @@ RUN echo "${LANG} UTF-8" > /etc/locale.gen && \
 # 根据构建参数构建开发环境
 ARG GIT_USER_NAME=
 ARG GIT_USER_MAIL=
-ARG UID=
-ARG USER_NAME=
-ARG USER_HOME=
-ARG GID=
-ARG GROUP_NAME=
-ARG CONFIGS=python:3.10.4;frontend:16.14.2
+ARG GIT_GPG_KEY=
+ARG UID=501
+ARG GID=20
+ARG USER_NAME=dev
+ARG USER_HOME=/home/dev
+ARG GROUP_NAME=staff
+ARG CONFIGS=python:3.11.3;frontend:18.16.0
 ADD script/build.sh /tmp/build/build.sh
 ADD script/config /tmp/build/config
-ADD authorized_keys /tmp/build/authorized_keys
-RUN AUTH_KEY_PATH=/tmp/build/authorized_keys CONFIG_PATH=/tmp/build/config /tmp/build/build.sh
-
-# 根据条件安装vscode的服务端
-ARG VSCODE_VERSION=
-ADD script/vscode.sh /tmp/build/vscode.sh
-RUN sudo -u ${USER_NAME} --preserve-env=VSCODE_VERSION /tmp/build/vscode.sh
+RUN CONFIG_PATH=/tmp/build/config /tmp/build/build.sh
 
 # 清理不需要的内容
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*

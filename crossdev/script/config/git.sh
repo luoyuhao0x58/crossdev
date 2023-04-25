@@ -9,6 +9,13 @@ if [ ! -z "$GIT_USER_NAME" ] && [ ! -z $GIT_USER_MAIL ]; then
     git config --global color.ui auto
     git config --global pull.ff only
     git config --global init.defaultbranch master
+
+    if [ ! -z "$GIT_GPG_KEY" ]; then
+        git config --global user.signingkey "$GIT_GPG_KEY"
+        git config --global commit.gpgsign true
+    fi
 else
     exit 1
 fi
+
+pip3 install commitizen

@@ -1,7 +1,9 @@
 #! /bin/bash
 set -uexo pipefail
 
-git clone https://github.com/ohmybash/oh-my-bash.git ~/.oh-my-bash
+GIT_REPO=https://github.com/ohmybash/oh-my-bash.git
+git clone --depth=1 "https://ghproxy.com/$GIT_REPO" ~/.oh-my-bash
+(cd ~/.oh-my-bash && git remote set-url origin "$GIT_REPO")
 
 cat <<\EOT >> ~/.bashrc
 
@@ -30,6 +32,8 @@ do
     cfg_type=$(echo $CONFIG | cut -d ':' -f 1)
     if [ "$cfg_type" == "python" ]; then
         echo 'completions+=(pip pip3)' >> ~/.bashrc
+    elif [ "$cfg_type" == "frontend" ]; then
+        echo 'completions+=(nvm npm)' >> ~/.bashrc
     fi
 done
 

@@ -68,3 +68,4 @@ $RECYCLE.BIN/
 docker-compose.override.yml
 crossdev/authorized_keys
 data/*
+.vscode

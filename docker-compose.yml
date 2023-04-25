@@ -1,24 +1,24 @@
 version: "2.4"
 services:
   crossdev:
-    container_name: crossdev
-    hostname: crossdev
-    image: ${IMAGE:-crossdev}
-    extends:
-      file: ./yaml/crossdev.yml
-      service: crossdev
+    container_name: "${HOST_NAME:-crossdev}"
+    hostname: "${HOST_NAME:-crossdev}"
+    image: "${IMAGE:-crossdev}"
     build:
+      context: ./crossdev
+      dockerfile: Dockerfile
       args:
         - SSH_PORT=${SSH_PORT:?err}
         - GIT_USER_NAME=${GIT_USER_NAME:?err}
         - GIT_USER_MAIL=${GIT_USER_MAIL:?err}
-        - UID=${UID:-1000}
-        - USER_NAME=${USER_NAME:?err}
-        - USER_HOME=${USER_HOME:?err}
-        - GID=${GID:-1000}
-        - GROUP_NAME=${GROUP_NAME:-staff}
-        - VSCODE_VERSION=${VSCODE_VERSION}
+        - GIT_GPG_KEY=${GIT_GPG_KEY:-}
     ports:
       - "${BIND_IP:-127.0.0.1}:${SSH_PORT:?err}:${SSH_PORT:?err}"
     volumes:
-      - "./data/ssh/hostkey:/etc/ssh/hostkey"
+      - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
+      - data_hostkey:/etc/ssh/hostkey
+      - "data_vscode:${USER_HOME:?err}/.vscode-server"
+
+volumes:
+  data_hostkey:
+  data_vscode:
