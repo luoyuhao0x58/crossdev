@@ -1,0 +1,29 @@
+version: "2.4"
+services:
+  sshd:
+    volumes: # 此处挂载宿主的文件夹
+      - "${USER_HOME:?err}/.ssh/id_rsa.pub:${USER_HOME:?err}/.ssh/authorized_keys:ro"
+      - "${USER_HOME:?err}/.ssh/id_rsa:${USER_HOME:?err}/.ssh/id_rsa:ro"
+  redis:
+    container_name: "${COMPOSE_PROJECT_NAME:?err}_redis"
+    image: redis
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - "data_redis:/data"
+  mysql:
+    image: mysql/mysql-server:8.0
+    container_name: "${COMPOSE_PROJECT_NAME:?err}_mysql"
+    hostname: mysql
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_USER=crossdev
+      - MYSQL_PASSWORD=crossdev
+      - MYSQL_ROOT_PASSWORD=crossdev
+      - MYSQL_DATABASE=crossdev
+    command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+    volumes:
+      - "data_mysql:/var/lib/mysql"
+
+volumes:
+  data_redis:
+  data_mysql:

@@ -1,23 +1,30 @@
 version: "2.4"
 services:
-  crossdev:
-    container_name: "${HOST_NAME:-crossdev}"
-    hostname: "${HOST_NAME:-crossdev}"
-    image: "${IMAGE:-crossdev}"
+  sshd:
+    container_name: "${COMPOSE_PROJECT_NAME:?err}_sshd"
+    hostname: "${COMPOSE_PROJECT_NAME:?err}"
+    image: "${IMAGE:-${COMPOSE_PROJECT_NAME:?err}}"
     build:
       context: ./crossdev
       dockerfile: Dockerfile
       args:
-        - SSH_PORT=${SSH_PORT:?err}
-        - GIT_USER_NAME=${GIT_USER_NAME:?err}
-        - GIT_USER_MAIL=${GIT_USER_MAIL:?err}
-        - GIT_GPG_KEY=${GIT_GPG_KEY:-}
+        - SSH_PORT=${SSH_PORT:-22222}
+        - CONFIGS=${CONFIGS:-python:3.11.3;frontend:18.16.0;go:1.20.3;rust:1.69.0;ruby:3.2.2;java:20.0.1}
+        - UID=${UID}
+        - GID=${GID}
+        - USER_NAME=${USER_NAME:-crossdev}
+        - GROUP_NAME=${GROUP_NAME}
+        - USER_HOME=${USER_HOME:-/mnt/crossdev}
+    environment:
+      - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL}
+      - GIT_SIGNINGKEY=${GIT_SIGNINGKEY}
     ports:
-      - "${BIND_IP:-127.0.0.1}:${SSH_PORT:?err}:${SSH_PORT:?err}"
+      - "${BIND_IP:-127.0.0.1}:${SSH_PORT:-22222}:${SSH_PORT:-22222}"
     volumes:
       - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
       - data_hostkey:/etc/ssh/hostkey
-      - "data_vscode:${USER_HOME:?err}/.vscode-server"
+      - "data_vscode:${USER_HOME:-/mnt/crossdev}/.vscode-server"
 
 volumes:
   data_hostkey:

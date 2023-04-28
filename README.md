@@ -4,6 +4,7 @@
 
 ## 支持系统
 
+- Linux
 - MacOS
 - Windows
 
@@ -18,12 +19,11 @@ git clone https://github.com/Haujilo/crossdev.git
 cd crossdev
 ```
 
-- 拷贝公钥
+- 克隆镜像
 
 ```shell
-cp ~/.ssh/id_rsa.pub crossdev/authorized_keys
+docker pull haujilo/crossdev:aarch64  # 如果机器是x86_64架构，则镜像修改为haujilo/crossdev:x86_64
 ```
-注：假设id_rsa.pub是公钥，如果公钥是其他路径，请自行替换。
 
 - 创建配置文件
 
@@ -32,20 +32,22 @@ cp ~/.ssh/id_rsa.pub crossdev/authorized_keys
 ```shell
 cat <<EOT >.env
 SSH_PORT=22222
-GIT_USER_NAME=$(git config user.name)
-GIT_USER_MAIL=$(git config user.email)
+GIT_AUTHOR_NAME=$(git config user.name)
+GIT_AUTHOR_EMAIL=$(git config user.email)
 UID=$(id -u)
-USER_NAME=$(id -un)
-USER_HOME=$(echo ~)
 GID=$(id -g)
 GROUP_NAME=$(id -gn)
+USER_NAME=$(id -un)
+USER_HOME=$(echo ~)
+IMAGE=haujilo/crossdev:aarch64  # 如果机器是x86_64架构，则镜像修改为haujilo/crossdev:x86_64
 EOT
 ```
 
 - 创建compose执行文件
 
 ```shell
-cp docker-compose.yml docker-compose.override.yml
+# 修改authorized_keys相关的部分，如果公钥是其他路径，请自行替换。确保把宿主上的公钥目录正确挂载进${USER_HOME}/.ssh/authorized_keys，并且权限为600
+cp docker-compose.override.tmpl.yml docker-compose.override.yml
 ```
 
 - 按需增加服务配置（参考配置服务）
@@ -53,13 +55,13 @@ cp docker-compose.yml docker-compose.override.yml
 - 构建服务
 
 ```shell
-docker-compose build crossdev
+docker-compose build sshd
 ```
 
 - 启动服务
 
 ```shell
-docker-compose up -d
+docker-compose up -d sshd
 ```
 
 - 登陆环境
@@ -88,13 +90,11 @@ git clone https://github.com/Haujilo/crossdev.git
 cd crossdev
 ```
 
-- 拷贝公钥
+- 克隆镜像
 
-```powershell
-cp $env:HOMEPATH\.ssh\id_rsa.pub crossdev/authorized_keys
+```shell
+docker pull haujilo/crossdev:aarch64  # 如果机器是x86_64架构，则镜像修改为haujilo/crossdev:x86_64
 ```
-
-注：假设id_rsa.pub是公钥，如果公钥是其他路径，请自行替换。
 
 - 创建配置文件
 
@@ -102,8 +102,8 @@ cp $env:HOMEPATH\.ssh\id_rsa.pub crossdev/authorized_keys
 
 ```powershell
 echo SSH_PORT=22222 > .env
-echo GIT_USER_NAME=$(git config user.name) >> .env
-echo GIT_USER_MAIL=$(git config user.email) >> .env
+echo GIT_AUTHOR_NAME=$(git config user.name) >> .env
+echo GIT_AUTHOR_EMAIL=$(git config user.email) >> .env
 echo USER_NAME=$env:USERNAME >> .env
 echo USER_HOME="/$(($HOME -replace '\\','/') -replace ':','')" >> .env
 ```
@@ -111,21 +111,23 @@ echo USER_HOME="/$(($HOME -replace '\\','/') -replace ':','')" >> .env
 - 创建compose执行文件
 
 ```powershell
-cp docker-compose.yml docker-compose.override.yml
+cp docker-compose.override.tmpl.yml docker-compose.override.yml
 ```
+
+注：修改authorized_keys相关的部分，如果公钥是其他路径，请自行替换。确保把宿主上的公钥目录正确挂载进${USER_HOME}/.ssh/authorized_keys，并且权限为600
 
 - 按需增加服务配置（参考配置服务）
 
 - 构建服务
 
 ```powershell
-docker-compose build crossdev
+docker-compose build sshd
 ```
 
 - 启动服务
 
 ```powershell
-docker-compose up -d
+docker-compose up -d sshd
 ```
 
 - 登陆环境
@@ -142,13 +144,19 @@ ssh $env:USERNAME@127.0.0.1 -p 22222
 
     - 宿主创建一个空文件并赋予权限
     ```shell
-    touch ./data/.bash_history && chmod 666 ./data/.bash_history
+    touch ./.bash_history && chmod 666 ./.bash_history
     ```
-    - 挂载文件```"./data/.bash_history:${USER_HOME:?err}/.bash_history"```
-
-- 增加的服务加上```network_mode: "service:crossdev"```即可，可以让服务在同一个网络内，开发常用的127.0.0.1的配置能起效
+    - 挂载文件```"./.bash_history:${USER_HOME:?err}/.bash_history"```
 
 - 如果要用docker in docker，则需要在crossdev服务增加volumes
 
     - MacOS: ```"/var/run/docker.sock:/var/run/docker.sock"```
     - Windows: ```"//var/run/docker.sock:/var/run/docker.sock"```
+
+- 如果要使用git的gpg功能，可以挂载（结合宿主实际路径修改）：
+  ```yaml
+  - sshd
+    volumes:
+      - "${USER_HOME:?err}/.gnupg/private-keys-v1.d:${USER_HOME:?err}/.gnupg/private-keys-v1.d:ro"
+      - "${USER_HOME:?err}/.gnupg/pubring.kbx:${USER_HOME:?err}/.gnupg/pubring.kbx:ro"
+  ```
