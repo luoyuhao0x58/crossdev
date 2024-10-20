@@ -1,0 +1,46 @@
+services:
+  crossdev:
+    cpu_count: 2
+    mem_limit: "6GB"
+    volumes:
+      - "~/.bash_history:${BUILDER_HOME:-/.crossdev}/.bash_history"
+      - "~/.ssh/id_rsa:${BUILDER_HOME:-/.crossdev}/.ssh/id_rsa:ro"
+      - "~/.ssh/id_rsa.pub:${BUILDER_HOME:-/.crossdev}/.ssh/authorized_keys:ro"
+      - "${WORKSPACE_PATH:?err}:${BUILDER_HOME:-/.crossdev}/workspace"
+volumes:
+  data_vscode:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: "${STORAGE_PATH:?err}/vscode"
+  data_hostkey:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: "${STORAGE_PATH:?err}/ssh/hostkey"
+  data_mysql:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: "${STORAGE_PATH:?err}/db/mysql"
+  data_mongodb:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: "${STORAGE_PATH:?err}/db/mongodb"
+  data_mongodb_configdb:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: "${STORAGE_PATH:?err}/db/mongodb_configdb"
+  data_redis:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: "${STORAGE_PATH:?err}/db/redis"
