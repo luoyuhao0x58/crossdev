@@ -30,9 +30,7 @@ jobs:
           context: ./crossdev
           pull: true
           push: true
-          platforms: |
-            linux/amd64
-            linux/arm64
+          platforms: linux/arm64
           build-args: |
             CONFIGS=${{ vars.CONFIGS }}
           tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest

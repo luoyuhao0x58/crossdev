@@ -7,12 +7,9 @@ cgit https://github.com/jenv/jenv.git ~/.jenv
 echo 'export PATH="$HOME/.jenv/bin:$PATH"' >>~/.profile
 echo 'eval "$(jenv init -)"' >>~/.profile
 
-set +u
-source ~/.profile
-eval "$(jenv init -)"
+cat <<'EOF' >"$HOME/install_jvm.sh"
+VERSIONS=$@
 jenv enable-plugin export
-source ~/.profile
-set -u
 
 JAVA_ROOT_PATH=/opt/java/jvm
 sudo mkdir -p $JAVA_ROOT_PATH
@@ -33,3 +30,8 @@ for VERSION in $VERSIONS; do
   jinstall $VERSION
 done
 jenv global $VERSION
+
+EOF
+
+(bash -l "$HOME/install_jvm.sh" $VERSIONS)
+rm -rf "$HOME/install_jvm.sh"
